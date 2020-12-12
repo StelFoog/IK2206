@@ -1,4 +1,5 @@
 import java.security.cert.X509Certificate;
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -15,6 +16,12 @@ class VerifyCertificate {
 		return cert;
 	}
 
+	public static X509Certificate getCertString(String cert) throws CertificateException {
+		CertificateFactory cf = CertificateFactory.getInstance("X.509");
+
+		return (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(cert.getBytes()));
+	}
+
 	public static void verify(X509Certificate caCert, X509Certificate usrCert) {
 		try {
 			caCert.checkValidity();
@@ -27,6 +34,21 @@ class VerifyCertificate {
 
 			// TODO: handle exception
 		}
+	}
+
+	public static boolean verify(String caCert, String usrCert) {
+		try {
+			X509Certificate caCertificate = getCertString(caCert);
+			X509Certificate usrCertificate = getCertString(usrCert);
+
+			caCertificate.checkValidity();
+			usrCertificate.checkValidity();
+			caCertificate.verify(usrCertificate.getPublicKey());
+			usrCertificate.verify(caCertificate.getPublicKey());
+		} catch (Exception e) {
+			return false;
+		}
+		return true;
 	}
 
 	public static void main(String args[]) throws CertificateException, FileNotFoundException {

@@ -3,7 +3,7 @@
 ### CA Certificate
 
 - Generating new private RSA key: `openssl genrsa -out key.pem`
-- Generating corresponding public key: `openssl rsa -in prikey.rsa -pubout -out -pubkey.rsa`
+- Generating corresponding public key: `openssl rsa -in prikey.rsa -pubout -out -pubkey.pub`
 - Generating CA certificate: `openssl req -new -x509 -key key.pem -out CA.pem`
 
 ### User Certificate

@@ -22,6 +22,8 @@ import java.net.Socket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.io.IOException;
 import java.io.FileInputStream;
 import java.util.Properties;
@@ -42,8 +44,15 @@ public class ForwardServer {
      * host/port, etc.
      */
     private void doHandshake(Socket handshakeSocket) throws UnknownHostException, IOException, Exception {
-
-        serverHandshake = new ServerHandshake(handshakeSocket);
+        String myCert = "";
+        String caCert = "";
+        try {
+            myCert = new String(Files.readAllBytes(Paths.get(arguments.get("usercert"))));
+            caCert = new String(Files.readAllBytes(Paths.get(arguments.get("cacert"))));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        serverHandshake = new ServerHandshake(handshakeSocket, myCert, caCert);
     }
 
     /**
