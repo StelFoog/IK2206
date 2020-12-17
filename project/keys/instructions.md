@@ -6,9 +6,7 @@
 
 **CERTIFICATE GENERATION BROKEN**
 
-**NONE OF CERTIFICATES VERIFYABLE**
-
-- Generating new private key for CA: `openssl genrsa -out ca-private.pem`
+- Generating new private key for CA: `openssl genrsa -out ca-private.pem 1024`
 
 - Generating CA certificate: `openssl req -new -x509 -key ca-private.pem -out ca.pem`
   - Country Name (2 letter code) []: `SE`
@@ -21,7 +19,7 @@
 
 ### Server Certificate
 
-- Generating new private key for Client: `openssl genrsa -out server-private.pem`
+- Generating new private key for Client: `openssl genrsa -out server-private.pem 1024`
 - Generate DER private: `openssl pkcs8 -nocrypt -topk8 -inform PEM -in server-private.pem  -outform DER -out server-private.der`
   
 - Generate Server CSR: `openssl req -new -key server-private.pem -out server.csr`
@@ -37,7 +35,7 @@
 
 ### Client Certificate
 
-- Generating new private key for Client: `openssl genrsa -out client-private.pem`
+- Generating new private key for Client: `openssl genrsa -out client-private.pem 1024`
 - Generate DER private: `openssl pkcs8 -nocrypt -topk8 -inform PEM -in client-private.pem -outform DER -out client-private.der`
 
 - Generate Server CSR: `openssl req -new -key client-private.pem -out client.csr`
