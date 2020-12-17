@@ -21,9 +21,10 @@
 
 ### Server Certificate
 
-- Generating new private key for Server: `openssl genpkey -outform DER -out server-private.der -algorithm RSA -pkeyopt rsa_keygen_bits:2048`
+- Generating new private key for Client: `openssl genrsa -out server-private.pem`
+- Generate DER private: `openssl pkcs8 -nocrypt -topk8 -inform PEM -in server-private.pem  -outform DER -out server-private.der`
   
-- Generate Server CSR: `openssl req -new -key server-private.der -keyform DER -out server.csr`
+- Generate Server CSR: `openssl req -new -key server-private.pem -out server.csr`
   - Country Name (2 letter code) []: `SE`
   - State or Province Name (full name) []: ` ` (Should be left blank)
   - Locality Name (eg, city) []: `Stockholm`
@@ -32,13 +33,14 @@
   - Common Name (eg, fully qualified host name) []: `server-pf.ik2206.kth.se`
   - Email Address []: `samlar@kth.se`
   
-- Generate Server certificate: `openssl x509 -req -days 360 -inform DER -outform PEM -in server.csr -CA ca.pem -CAkey ca-private.pem -CAcreateserial -out server.pem`
+- Generate Server certificate: `openssl x509 -req -days 360 -inform PEM -outform PEM -in server.csr -CA ca.pem -CAkey ca-private.pem -CAcreateserial -out server.pem`
 
 ### Client Certificate
 
-- Generating new private key for User: `openssl genpkey -outform DER -out client-private.der -algorithm RSA -pkeyopt rsa_keygen_bits:2048`
+- Generating new private key for Client: `openssl genrsa -out client-private.pem`
+- Generate DER private: `openssl pkcs8 -nocrypt -topk8 -inform PEM -in client-private.pem -outform DER -out client-private.der`
 
-- Generate Server CSR: `openssl req -new -key client-private.der -keyform DER -out client.csr`
+- Generate Server CSR: `openssl req -new -key client-private.pem -out client.csr`
   - Country Name (2 letter code) []: `SE`
   - State or Province Name (full name) []: ` ` (Should be left blank)
   - Locality Name (eg, city) []: `Stockholm`
@@ -47,7 +49,7 @@
   - Common Name (eg, fully qualified host name) []: `client-pf.ik2206.kth.se`
   - Email Address []: `samlar@kth.se`
   
-- Generate Client certificate: `openssl x509 -req -days 360 -inform DER -outform PEM -in client.csr -CA ca.pem -CAkey ca-private.pem -CAcreateserial -out client.pem`
+- Generate Client certificate: `openssl x509 -req -days 360 -inform PEM -outform PEM -in client.csr -CA ca.pem -CAkey ca-private.pem -CAcreateserial -out client.pem`
 
 ---
 
@@ -118,20 +120,18 @@ The handshake works by `ForwardClient` and `ForwardServer` sending four messages
 
 To run the project we need to run the `ForwardServer`, the `ForwardClient` and two `proxies`. One `proxy` for sending data and one for recieving data.
 
+They should be started in the following order: 
+1. ForwardServer
+2. ForwardClient
+3. Listening proxy
+4. Sending proxy
+
 - **Starting ForwardServer**: `java ForwardServer --handshakeport=2206 --usercert=keys/server.pem --cacert=keys/ca.pem --key=keys/server-private.der`
   - `handshakeport` takes a number, we can choose freely, but must use the same when setting `handshakeport` for `ForwardClient`. When testing we'll use `2206`.
   - `usercert` takes the filepath to the server certificate. When testing we use `keys/server.pem`.
   - `cacert` takes the filepath to the ca certificate. When testing we use `keys/ca.pem`.
   - `key` takes the filepath for the server's private key. When testing we use `keys/server-private.der`.
     - For all filepaths we would remove `keys/` if we were in the `final` folder, i.e. `keys/ca.pem` would become just `ca.pem`.
-
-- **Starting the proxies**:
-  - `nc <host> <port>`
-    - Will start netcat at `host`:`port`. Since ForwardClient is running locally, `localhost` is what we will use for the host parameter. We can choose the port ourselves as long as we specify the same port as `proxyport` when running `ForwardClient`. When testing we'll use `12345`.
-    - With this proxy we'll be able to send input to `ForwardClient`. After starting it any plaintext we write followed by `enter ↵` sent forward.
-  - `nc -l <port>`
-    - Will start netcat in listening mode at `port`. When testing we'll use `6789`.
-    - This instance of netcat will print any data sent to `port`.
   
 - **Starting ForwardClient**: `java ForwardClient --handshakehost=localhost --handshakeport=2206 --proxyport=12345 --targethost=localhost --targetport=6789 --usercert=keys/client.pem --cacert=keys/ca.pem --key=keys/client-private.der`
   - `handshakehost` takes the name of the host to connect to. When testing this will be `localhost` since we're running both client and server locally.
@@ -143,6 +143,14 @@ To run the project we need to run the `ForwardServer`, the `ForwardClient` and t
   - `cacert` takes the filepath to the ca certificate. When testing we use `keys/ca.pem`.
   - `key` takes the filepath for the clients's private key. When testing we use `keys/client-private.der`.
     - For all filepaths we would remove `keys/` if we were in the `final` folder, i.e. `keys/ca.pem` would become just `ca.pem`.
+
+- **Starting the proxies**:
+  - `nc <host> <port>`
+    - Will start netcat at `host`:`port`. Since ForwardClient is running locally, `localhost` is what we will use for the host parameter. We can choose the port ourselves as long as we specify the same port as `proxyport` when running `ForwardClient`. When testing we'll use `12345`.
+    - With this proxy we'll be able to send input to `ForwardClient`. After starting it any plaintext we write followed by `enter ↵` sent forward.
+  - `nc -l <port>`
+    - Will start netcat in listening mode at `port`. When testing we'll use `6789`.
+    - This instance of netcat will print any data sent to `port`.
 
 ---
 
